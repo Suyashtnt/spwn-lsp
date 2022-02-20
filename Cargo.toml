@@ -7,9 +7,10 @@ license = "MIT"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-spwn = { git = "https://github.com/Spu7Nix/SPWN-language.git", rev = "466d63e5d7092e6b7db861673869c5d3282bf62d" }
+spwn = { git = "https://github.com/Spu7Nix/SPWN-language.git", rev = "2dfd44b37872da2dc0fe51114f9fdf9899a6519c" }
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 tower-lsp = { version = "*" }
 env_logger = "0.9.0"
+url = "2.2.2"
 tokio = { version = "1.6", features = ["io-std", "io-util", "macros", "net", "rt-multi-thread", "time"] }
