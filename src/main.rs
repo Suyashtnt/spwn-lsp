@@ -20,12 +20,11 @@ impl LanguageServer for Backend {
                 text_document_sync: Some(TextDocumentSyncCapability::Kind(
                     TextDocumentSyncKind::FULL,
                 )),
-                completion_provider: Some(CompletionOptions {
-                    resolve_provider: Some(false),
-                    trigger_characters: Some(vec![".".to_string()]),
-                    work_done_progress_options: Default::default(),
-                    all_commit_characters: None,
-                }),
+                definition_provider: Some(OneOf::Right(DefinitionOptions {
+                    work_done_progress_options: WorkDoneProgressOptions {
+                        work_done_progress: Some(false),
+                    },
+                })),
                 workspace: Some(WorkspaceServerCapabilities {
                     workspace_folders: Some(WorkspaceFoldersServerCapabilities {
                         supported: Some(true),
@@ -69,10 +68,25 @@ impl LanguageServer for Backend {
         }
     }
 
-    async fn did_save(&self, _: DidSaveTextDocumentParams) {
-        self.client
-            .log_message(MessageType::INFO, "file saved!")
-            .await;
+    async fn did_open(&self, params: DidOpenTextDocumentParams) {
+        let file = params.text_document.text;
+
+        if let Some(diag) = syntax_check(
+            file,
+            params
+                .text_document
+                .uri
+                .to_file_path()
+                .expect("Could not turn file url to PathBuf"),
+        ) {
+            self.client
+                .publish_diagnostics(params.text_document.uri, vec![diag], None)
+                .await;
+        } else {
+            self.client
+                .publish_diagnostics(params.text_document.uri, vec![], None)
+                .await;
+        }
     }
 }
 
@@ -82,6 +96,7 @@ async fn main() {
     let stdout = tokio::io::stdout();
 
     let (service, messages) = LspService::new(|client| Backend { client });
+
     Server::new(stdin, stdout)
         .interleave(messages)
         .serve(service)

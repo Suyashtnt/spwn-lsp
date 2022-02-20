@@ -25,13 +25,16 @@ pub fn pos_to_range(text: &String, (start, end): (usize, usize)) -> Range {
         let idx = lines
             .binary_search_by_key(&pos, |line| line.offset)
             .unwrap_or_else(|idx| idx.saturating_sub(1));
+
         let line = &lines[idx];
+
         assert!(
             pos >= line.offset,
             "offset = {}, line.offset = {}",
             pos,
             line.offset
         );
+
         Position {
             line: idx as u32,
             character: (pos - line.offset) as u32,
