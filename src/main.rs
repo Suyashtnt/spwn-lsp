@@ -1,10 +1,10 @@
 mod syntax;
+mod utils;
 
 use syntax::syntax_check;
 use tower_lsp::jsonrpc::Result;
 use tower_lsp::lsp_types::*;
 use tower_lsp::{Client, LanguageServer, LspService, Server};
-use url::Url;
 
 #[derive(Debug)]
 struct Backend {
@@ -61,6 +61,10 @@ impl LanguageServer for Backend {
         ) {
             self.client
                 .publish_diagnostics(params.text_document.uri, vec![diag], None)
+                .await;
+        } else {
+            self.client
+                .publish_diagnostics(params.text_document.uri, vec![], None)
                 .await;
         }
     }
